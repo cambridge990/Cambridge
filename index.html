@@ -80,9 +80,7 @@
   }
 
   /* ── Search ── */
-  .search-wrap {
-    position: relative;
-  }
+  .search-wrap { position: relative; }
   .search-icon {
     position: absolute;
     left: 14px;
@@ -165,6 +163,16 @@
     max-width: 600px;
     margin: 0 auto;
   }
+
+  /* ── Loading / error ── */
+  .status-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .status-msg .icon { font-size: 40px; margin-bottom: 12px; }
+  .status-msg.error { color: #c0392b; }
 
   /* ── Section headers ── */
   .section-label {
@@ -291,22 +299,7 @@
     letter-spacing: 0.02em;
     font-feature-settings: 'tnum';
   }
-  .phone-row .call-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 15px;
-  }
-  .cell-badge {
-    background: #e8f4ed;
-    color: var(--green);
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 8px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-left: 6px;
-  }
+  .phone-row .call-btn { width: 36px; height: 36px; font-size: 15px; }
 
   /* ── Empty state ── */
   .empty-state {
@@ -355,7 +348,6 @@
   }
   .nav-btn .nav-icon { font-size: 20px; }
   .nav-btn.active { color: var(--navy); }
-  .nav-btn.active .nav-icon { filter: none; }
 
   /* ── Result count bar ── */
   .results-bar {
@@ -375,7 +367,7 @@
       <h1>Cambridge Court</h1>
       <p>Resident Directory</p>
     </div>
-    <span class="resident-count" id="resCount"></span>
+    <span class="resident-count" id="resCount">Loading…</span>
   </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
@@ -389,6 +381,10 @@
 </div>
 
 <main class="content" id="content">
+  <div class="status-msg" id="statusMsg">
+    <div class="icon">⏳</div>
+    Loading directory…
+  </div>
   <div class="empty-state" id="emptyState">
     <div class="empty-icon">🔍</div>
     <h3>No results found</h3>
@@ -409,72 +405,76 @@
 </nav>
 
 <script>
-const RESIDENTS = [{"unit": 101, "building": 1, "full": "Ken and Rosa Yun", "first": "Ken and Rosa", "last": "Yun", "phone": "917-838-5103", "alt": "", "cell": ""}, {"unit": 102, "building": 1, "full": "Dan Ferriso", "first": "Dan", "last": "Ferriso", "phone": "516-822-3753", "alt": "", "cell": ""}, {"unit": 103, "building": 1, "full": "Sandy Yeh & Michael Chang", "first": "Sandy Yeh & Michael", "last": "Chang", "phone": "516-368-4266", "alt": "", "cell": ""}, {"unit": 104, "building": 1, "full": "Marguerite Burt", "first": "Marguerite", "last": "Burt", "phone": "516-760-0697", "alt": "", "cell": ""}, {"unit": 105, "building": 1, "full": "Barbara Cheslock", "first": "Barbara", "last": "Cheslock", "phone": "516-935-5576", "alt": "", "cell": ""}, {"unit": 106, "building": 1, "full": "Frank Tomolonis", "first": "Frank", "last": "Tomolonis", "phone": "516-312-4392", "alt": "", "cell": ""}, {"unit": 107, "building": 1, "full": "Philip Giommetti", "first": "Philip", "last": "Giommetti", "phone": "516-938-3273", "alt": "", "cell": ""}, {"unit": 108, "building": 1, "full": "Irene Pollaci", "first": "Irene", "last": "Pollaci", "phone": "516-643-8099", "alt": "", "cell": ""}, {"unit": 109, "building": 1, "full": "Mary Lou Price", "first": "Mary Lou", "last": "Price", "phone": "516-852-2316", "alt": "", "cell": ""}, {"unit": 110, "building": 1, "full": "Mary Libardi", "first": "Mary", "last": "Libardi", "phone": "516-349-8103", "alt": "", "cell": ""}, {"unit": 201, "building": 2, "full": "Norma Goerke", "first": "Norma", "last": "Goerke", "phone": "516-681-3769", "alt": "", "cell": "516-316-9720"}, {"unit": 202, "building": 2, "full": "Barbara Zukowsky", "first": "Barbara", "last": "Zukowsky", "phone": "516-286-0825", "alt": "", "cell": ""}, {"unit": 203, "building": 2, "full": "Carlo Zilofro", "first": "Carlo", "last": "Zilofro", "phone": "516-931-5824", "alt": "", "cell": ""}, {"unit": 204, "building": 2, "full": "Barbara and Albert Libardi", "first": "Barbara and Albert", "last": "Libardi", "phone": "516-576-1027", "alt": "", "cell": ""}, {"unit": 205, "building": 2, "full": "Susan Minichello", "first": "Susan", "last": "Minichello", "phone": "516-822-5026", "alt": "", "cell": "516-448-2670"}, {"unit": 206, "building": 2, "full": "Ann Allen", "first": "Ann", "last": "Allen", "phone": "516-390-1245", "alt": "", "cell": ""}, {"unit": 207, "building": 2, "full": "", "first": "", "last": "", "phone": "", "alt": "", "cell": ""}, {"unit": 208, "building": 2, "full": "Elizabeth McLarney", "first": "Elizabeth", "last": "McLarney", "phone": "516-578-4692", "alt": "", "cell": ""}, {"unit": 209, "building": 2, "full": "Ira and Emilia Baer", "first": "Ira and Emilia", "last": "Baer", "phone": "516-622-0618", "alt": "", "cell": ""}, {"unit": 210, "building": 2, "full": "Camelia Mariolakis", "first": "Camelia", "last": "Mariolakis", "phone": "516-342-1724", "alt": "", "cell": ""}, {"unit": 301, "building": 3, "full": "Carol Cleary", "first": "Carol", "last": "Cleary", "phone": "516-433-0360", "alt": "", "cell": "516-476-6956"}, {"unit": 302, "building": 3, "full": "Carol Hogan", "first": "Carol", "last": "Hogan", "phone": "516-433-5746", "alt": "", "cell": "516-987-4011"}, {"unit": 303, "building": 3, "full": "Neil Miller and Toni Hoyos", "first": "Neil Miller and Toni Hoyos", "last": "Miller", "phone": "516-301-7380", "alt": "", "cell": ""}, {"unit": 304, "building": 3, "full": "Martha Stopoli", "first": "Martha", "last": "Stopoli", "phone": "516-349-9259", "alt": "", "cell": ""}, {"unit": 305, "building": 3, "full": "James and Dorothy Wisnieski", "first": "James and Dorothy", "last": "Wisnieski", "phone": "516-433-4251", "alt": "", "cell": "516-680-2624"}, {"unit": 306, "building": 3, "full": "", "first": "", "last": "", "phone": "", "alt": "", "cell": ""}, {"unit": 307, "building": 3, "full": "Paul and Linda Vaccese", "first": "Paul and Linda", "last": "Vaccese", "phone": "516-987-5436", "alt": "", "cell": ""}, {"unit": 308, "building": 3, "full": "", "first": "", "last": "", "phone": "", "alt": "", "cell": ""}, {"unit": 401, "building": 4, "full": "Marge Cutaia", "first": "Marge", "last": "Cutaia", "phone": "516-719-2812", "alt": "", "cell": ""}, {"unit": 402, "building": 4, "full": "Deborah Skelley", "first": "Deborah", "last": "Skelley", "phone": "516-241-7864", "alt": "", "cell": ""}, {"unit": 403, "building": 4, "full": "John and Pamela Flanagan", "first": "John and Pamela", "last": "Flanagan", "phone": "516-938-9334", "alt": "", "cell": ""}, {"unit": 404, "building": 4, "full": "Paul Kraus", "first": "Paul", "last": "Kraus", "phone": "516-433-6113", "alt": "", "cell": ""}, {"unit": 405, "building": 4, "full": "Catherine Vera Coen", "first": "Catherine Vera", "last": "Coen", "phone": "516-796-9655", "alt": "", "cell": ""}, {"unit": 406, "building": 4, "full": "Madeline Geschweng", "first": "Madeline", "last": "Geschweng", "phone": "516-681-7467", "alt": "", "cell": ""}, {"unit": 407, "building": 4, "full": "", "first": "", "last": "", "phone": "", "alt": "", "cell": ""}, {"unit": 408, "building": 4, "full": "Anthony and Marian Serpico", "first": "Anthony and Marian", "last": "Serpico", "phone": "516-935-7240", "alt": "", "cell": ""}, {"unit": 501, "building": 5, "full": "Saul Weinstein", "first": "Saul", "last": "Weinstein", "phone": "516-732-5675", "alt": "", "cell": ""}, {"unit": 502, "building": 5, "full": "Mary Reardon", "first": "Mary", "last": "Reardon", "phone": "516-205-0819", "alt": "", "cell": ""}, {"unit": 503, "building": 5, "full": "Pat McLean", "first": "Pat", "last": "McLean", "phone": "516-433-7141", "alt": "", "cell": ""}, {"unit": 504, "building": 5, "full": "Barbara Touhy", "first": "Barbara", "last": "Touhy", "phone": "516-822-7853", "alt": "", "cell": ""}, {"unit": 505, "building": 5, "full": "Lou Maniscalco", "first": "Lou", "last": "Maniscalco", "phone": "516-575-8717", "alt": "", "cell": ""}, {"unit": 506, "building": 5, "full": "Loretta Depree", "first": "Loretta", "last": "Depree", "phone": "516-349-8529", "alt": "", "cell": ""}, {"unit": 507, "building": 5, "full": "Dolores Schmidt", "first": "Dolores", "last": "Schmidt", "phone": "516-681-1474", "alt": "", "cell": ""}, {"unit": 508, "building": 5, "full": "Mary Panico", "first": "Mary", "last": "Panico", "phone": "516-349-8797", "alt": "", "cell": ""}, {"unit": 509, "building": 5, "full": "Grace Mancz", "first": "Grace", "last": "Mancz", "phone": "516-503-1459", "alt": "", "cell": ""}, {"unit": 510, "building": 5, "full": "Mari Alexander", "first": "Mari", "last": "Alexander", "phone": "516-236-1847", "alt": "", "cell": ""}, {"unit": 601, "building": 6, "full": "Elaine Ryan", "first": "Elaine", "last": "Ryan", "phone": "516-348-3005", "alt": "", "cell": ""}, {"unit": 602, "building": 6, "full": "Thomas and Marion Penna", "first": "Thomas and Marion", "last": "Penna", "phone": "516-342-3724", "alt": "", "cell": ""}, {"unit": 603, "building": 6, "full": "Bernice Mieckowski", "first": "Bernice", "last": "Mieckowski", "phone": "516-576-0828", "alt": "", "cell": ""}, {"unit": 604, "building": 6, "full": "Dianne Brousseau", "first": "Dianne", "last": "Brousseau", "phone": "516-296-0277", "alt": "", "cell": ""}, {"unit": 605, "building": 6, "full": "Myung and Jun Lee", "first": "Myung and Jun", "last": "Lee", "phone": "516-282-4117", "alt": "", "cell": ""}, {"unit": 606, "building": 6, "full": "Alphonse and Jane Piscitelli", "first": "Alphonse and Jane", "last": "Piscitelli", "phone": "516-735-7991", "alt": "", "cell": ""}, {"unit": 607, "building": 6, "full": "", "first": "", "last": "", "phone": "", "alt": "", "cell": ""}, {"unit": 608, "building": 6, "full": "John Ryan", "first": "John", "last": "Ryan", "phone": "516-520-1640", "alt": "", "cell": ""}, {"unit": 609, "building": 6, "full": "Barbara Durnack", "first": "Barbara", "last": "Durnack", "phone": "516-465-9890", "alt": "", "cell": ""}, {"unit": 610, "building": 6, "full": "Josephine Moschera", "first": "Josephine", "last": "Moschera", "phone": "516-349-0660", "alt": "", "cell": ""}, {"unit": 611, "building": 6, "full": "Lucille Walsh", "first": "Lucille", "last": "Walsh", "phone": "516-342-6234", "alt": "", "cell": ""}, {"unit": 612, "building": 6, "full": "Richard and Bernadette Burg", "first": "Richard and Bernadette", "last": "Burg", "phone": "516-447-7120", "alt": "", "cell": ""}, {"unit": 701, "building": 7, "full": "", "first": "", "last": "", "phone": "", "alt": "", "cell": ""}, {"unit": 702, "building": 7, "full": "Charles and Roseann Terzano", "first": "Charles and Roseann", "last": "Terzano", "phone": "516-735-0457", "alt": "", "cell": ""}, {"unit": 703, "building": 7, "full": "Marion Campiglia", "first": "Marion", "last": "Campiglia", "phone": "516-342-6813", "alt": "", "cell": ""}, {"unit": 704, "building": 7, "full": "John Kessler", "first": "John", "last": "Kessler", "phone": "516-998-8905", "alt": "", "cell": ""}, {"unit": 705, "building": 7, "full": "Greta Posillico", "first": "Greta", "last": "Posillico", "phone": "516-433-7765", "alt": "", "cell": ""}, {"unit": 706, "building": 7, "full": "Marc and Elyse Arkind", "first": "Marc and Elyse", "last": "Arkind", "phone": "516-942-3283", "alt": "", "cell": ""}, {"unit": 707, "building": 7, "full": "Catherine Santoro", "first": "Catherine", "last": "Santoro", "phone": "516-383-2494", "alt": "", "cell": ""}, {"unit": 708, "building": 7, "full": "Ellen Gangi", "first": "Ellen", "last": "Gangi", "phone": "516-822-3731", "alt": "", "cell": ""}, {"unit": 709, "building": 7, "full": "Frank and Maryann Rybak", "first": "Frank and Maryann", "last": "Rybak", "phone": "516-349-7887", "alt": "", "cell": ""}, {"unit": 710, "building": 7, "full": "Maureen Jaklitsch", "first": "Maureen", "last": "Jaklitsch", "phone": "516-931-3962", "alt": "", "cell": ""}, {"unit": 801, "building": 8, "full": "Annie Collins", "first": "Annie", "last": "Collins", "phone": "516-935-0386", "alt": "", "cell": ""}, {"unit": 802, "building": 8, "full": "Susan Azarian", "first": "Susan", "last": "Azarian", "phone": "516-731-8866", "alt": "", "cell": ""}, {"unit": 803, "building": 8, "full": "Rosalie Calapai", "first": "Rosalie", "last": "Calapai", "phone": "516-433-6765", "alt": "", "cell": ""}, {"unit": 804, "building": 8, "full": "", "first": "", "last": "", "phone": "", "alt": "", "cell": ""}, {"unit": 805, "building": 8, "full": "Fred Catapano", "first": "Fred", "last": "Catapano", "phone": "516-796-8777", "alt": "", "cell": ""}, {"unit": 806, "building": 8, "full": "Connie Sena", "first": "Connie", "last": "Sena", "phone": "516-349-8022", "alt": "", "cell": ""}, {"unit": 807, "building": 8, "full": "Donna & EJ Weston", "first": "Donna & EJ", "last": "Weston", "phone": "516-818-8692", "alt": "", "cell": "631-374-6659"}, {"unit": 808, "building": 8, "full": "Virginia Romano", "first": "Virginia", "last": "Romano", "phone": "516-931-0768", "alt": "", "cell": ""}, {"unit": 809, "building": 8, "full": "Joan Eckard", "first": "Joan", "last": "Eckard", "phone": "516-815-0868", "alt": "", "cell": ""}, {"unit": 810, "building": 8, "full": "Tom and Patti Lagnese", "first": "Tom and Patti", "last": "Lagnese", "phone": "516-681-6690", "alt": "", "cell": ""}, {"unit": 811, "building": 8, "full": "Serafina Ziminski", "first": "Serafina", "last": "Ziminski", "phone": "516-513-0545", "alt": "", "cell": ""}, {"unit": 812, "building": 8, "full": "Carol Hymes", "first": "Carol", "last": "Hymes", "phone": "516-622-1402", "alt": "", "cell": ""}, {"unit": 901, "building": 9, "full": "Loretta Esposito", "first": "Loretta", "last": "Esposito", "phone": "516-822-1692", "alt": "", "cell": ""}, {"unit": 902, "building": 9, "full": "Phil and Ruth Park", "first": "Phil and Ruth", "last": "Park", "phone": "516-540-9171", "alt": "", "cell": ""}, {"unit": 903, "building": 9, "full": "Julia Adames", "first": "Julia", "last": "Adames", "phone": "516-749-0544", "alt": "", "cell": ""}, {"unit": 904, "building": 9, "full": "Rosemary Diradourian", "first": "Rosemary", "last": "Diradourian", "phone": "516-433-0105", "alt": "", "cell": ""}, {"unit": 905, "building": 9, "full": "Rose Silvar", "first": "Rose", "last": "Silvar", "phone": "516-342-6817", "alt": "", "cell": ""}, {"unit": 906, "building": 9, "full": "Christine Pisano", "first": "Christine", "last": "Pisano", "phone": "516-935-7089", "alt": "", "cell": ""}, {"unit": 907, "building": 9, "full": "Victoria Hock", "first": "Victoria", "last": "Hock", "phone": "516-510-6276", "alt": "", "cell": ""}, {"unit": 908, "building": 9, "full": "", "first": "", "last": "", "phone": "", "alt": "", "cell": ""}, {"unit": 909, "building": 9, "full": "Carol Tabin", "first": "Carol", "last": "Tabin", "phone": "516-822-3879", "alt": "", "cell": "516-205-6446"}, {"unit": 910, "building": 9, "full": "William and Sandra Cimino", "first": "William and Sandra", "last": "Cimino", "phone": "516-448-3836", "alt": "", "cell": ""}, {"unit": 911, "building": 9, "full": "Maria Espinal", "first": "Maria", "last": "Espinal", "phone": "516-456-2848", "alt": "", "cell": ""}, {"unit": 912, "building": 9, "full": "Ruth Theobald", "first": "Ruth", "last": "Theobald", "phone": "516-735-2731", "alt": "", "cell": ""}, {"unit": 1001, "building": 10, "full": "Annette Goldsmith", "first": "Annette", "last": "Goldsmith", "phone": "516-287-3344", "alt": "", "cell": ""}, {"unit": 1002, "building": 10, "full": "Mark and Angela Park", "first": "Mark and Angela", "last": "Park", "phone": "917-991-6370", "alt": "", "cell": ""}, {"unit": 1003, "building": 10, "full": "Jack ad Nicole Han", "first": "Jack ad Nicole", "last": "Han", "phone": "917-609-7901", "alt": "", "cell": ""}, {"unit": 1004, "building": 10, "full": "Dong and Sara Kim", "first": "Dong and Sara", "last": "Kim", "phone": "404-272-7275", "alt": "", "cell": ""}, {"unit": 1005, "building": 10, "full": "Lucille Kenefick", "first": "Lucille", "last": "Kenefick", "phone": "516-592-1261", "alt": "", "cell": ""}, {"unit": 1006, "building": 10, "full": "Kathleen Gerrity", "first": "Kathleen", "last": "Gerrity", "phone": "516-349-7155", "alt": "", "cell": ""}, {"unit": 1007, "building": 10, "full": "Linda Cecco", "first": "Linda", "last": "Cecco", "phone": "516-849-5531", "alt": "", "cell": ""}, {"unit": 1008, "building": 10, "full": "Bill and Patti LeBassi", "first": "Bill and Patti", "last": "LeBassi", "phone": "516-933-8967", "alt": "", "cell": ""}, {"unit": 1009, "building": 10, "full": "Paul and Joyce McGee", "first": "Paul and Joyce", "last": "McGee", "phone": "516-935-9462", "alt": "", "cell": ""}, {"unit": 1010, "building": 10, "full": "Robert Costello", "first": "Robert", "last": "Costello", "phone": "516-938-5626", "alt": "", "cell": ""}, {"unit": 1101, "building": 11, "full": "Lorraine Ciani", "first": "Lorraine", "last": "Ciani", "phone": "516-426-8028", "alt": "", "cell": ""}, {"unit": 1102, "building": 11, "full": "Brian and Teresa Egan", "first": "Brian and Teresa", "last": "Egan", "phone": "516-605-1633", "alt": "", "cell": ""}, {"unit": 1103, "building": 11, "full": "Viola Gentile", "first": "Viola", "last": "Gentile", "phone": "516-349-1080", "alt": "", "cell": ""}, {"unit": 1104, "building": 11, "full": "Mary Donahue", "first": "Mary", "last": "Donahue", "phone": "", "alt": "", "cell": ""}, {"unit": 1105, "building": 11, "full": "Veronica Arth", "first": "Veronica", "last": "Arth", "phone": "516-349-9714", "alt": "", "cell": ""}, {"unit": 1106, "building": 11, "full": "Theodore and Angelina Mucci", "first": "Theodore and Angelina", "last": "Mucci", "phone": "516-798-4967", "alt": "", "cell": ""}, {"unit": 1107, "building": 11, "full": "Matt Colasanti", "first": "Matt", "last": "Colasanti", "phone": "516-938-0596", "alt": "", "cell": ""}, {"unit": 1108, "building": 11, "full": "Emanuel and Irene Kallergis", "first": "Emanuel and Irene", "last": "Kallergis", "phone": "516-567-1947", "alt": "", "cell": ""}, {"unit": 1201, "building": 12, "full": "Joanne Emanuel", "first": "Joanne", "last": "Emanuel", "phone": "516-997-3863", "alt": "", "cell": ""}, {"unit": 1202, "building": 12, "full": "Caesar Figueroa", "first": "Caesar", "last": "Figueroa", "phone": "516-396-2179", "alt": "", "cell": "516-412-9285"}, {"unit": 1203, "building": 12, "full": "Douglas and Laureen DelVecchio", "first": "Douglas and Laureen", "last": "DelVecchio", "phone": "516-462-4194", "alt": "", "cell": ""}, {"unit": 1204, "building": 12, "full": "Lucy Tarnell", "first": "Lucy", "last": "Tarnell", "phone": "516-694-9479", "alt": "", "cell": ""}, {"unit": 1205, "building": 12, "full": "Carmela Pepe", "first": "Carmela", "last": "Pepe", "phone": "516-576-2020", "alt": "", "cell": ""}, {"unit": 1206, "building": 12, "full": "Richard and Dorothy Bischoff", "first": "Richard and Dorothy", "last": "Bischoff", "phone": "516-749-9801", "alt": "", "cell": ""}, {"unit": 1207, "building": 12, "full": "Mary Kachadourian", "first": "Mary", "last": "Kachadourian", "phone": "516-582-4210", "alt": "", "cell": ""}, {"unit": 1208, "building": 12, "full": "Barbara Swan", "first": "Barbara", "last": "Swan", "phone": "516-418-0664", "alt": "", "cell": ""}, {"unit": 1209, "building": 12, "full": "Peter Aull", "first": "Peter", "last": "Aull", "phone": "516-749-3017", "alt": "", "cell": ""}, {"unit": 1210, "building": 12, "full": "Charles Staudter", "first": "Charles", "last": "Staudter", "phone": "516-510-6423", "alt": "", "cell": ""}, {"unit": 1211, "building": 12, "full": "Joan Critelli", "first": "Joan", "last": "Critelli", "phone": "516-938-6834", "alt": "", "cell": ""}, {"unit": 1212, "building": 12, "full": "Donna DiSimone", "first": "Donna", "last": "DiSimone", "phone": "516-343-9367", "alt": "", "cell": ""}];
+// ═══════════════════════════════════════════════════════════════════
+//  CONFIGURATION
+//  Replace SHEET_URL with your published Google Sheet CSV URL.
+//
+//  Your Google Sheet should have these column headers in Row 1:
+//    unit | building | full | first | last | phone | cell
+//
+//  Column notes:
+//    unit     — unit number (e.g. 101)
+//    building — building number (e.g. 1)
+//    full     — full display name (e.g. "John and Mary Smith")
+//    first    — first name(s) only (e.g. "John and Mary")
+//    last     — last name only (e.g. "Smith")
+//    phone    — home phone number (e.g. 516-555-1234)
+//    cell     — cell phone number (leave blank if none)
+//
+//  Leave a row blank (only unit and building filled in) for
+//  vacant units — they will be skipped in the display.
+// ═══════════════════════════════════════════════════════════════════
 
-// ── State ──────────────────────────────────────────────────────────────────
-let currentView = 'search'; // search | alpha | building
-let currentFilter = 'all';  // 'all' or building number
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTQXiUEXJw_rqUUC05cuXJTXmbEXg-wtEr34lcF4cpuT6u6YNvUicGYGRVWWEriIfacMxau3fI348E2/pub?gid=1026240306&single=true&output=csv";
+const PROXY     = "https://api.allorigins.win/raw?url=";
+
+// ── CSV Parser ─────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+  return lines.slice(1).map(line => {
+    const fields = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuotes = !inQuotes; }
+      else if (ch === ',' && !inQuotes) { fields.push(current.trim()); current = ''; }
+      else { current += ch; }
+    }
+    fields.push(current.trim());
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (fields[i] || '').replace(/^"|"$/g, '').trim(); });
+    // Normalise types
+    obj.unit     = parseInt(obj.unit)     || 0;
+    obj.building = parseInt(obj.building) || 0;
+    obj.phone    = obj.phone || '';
+    obj.cell     = obj.cell  || '';
+    obj.alt      = obj.alt   || '';
+    obj.full     = obj.full  || '';
+    obj.first    = obj.first || '';
+    obj.last     = obj.last  || '';
+    return obj;
+  });
+}
+
+// ── State ──────────────────────────────────────────────────────────
+let RESIDENTS = [];
+let currentView   = 'search';
+let currentFilter = 'all';
 let query = '';
 let openCard = null;
 
-const withPhone = RESIDENTS.filter(r => r.phone || r.cell);
-const totalCount = RESIDENTS.filter(r => r.full).length;
-
-// ── Init tabs ──────────────────────────────────────────────────────────────
-const buildings = [...new Set(RESIDENTS.map(r => r.building))].sort((a,b)=>a-b);
-const tabBar = document.getElementById('tabBar');
-buildings.forEach(b => {
-  const btn = document.createElement('button');
-  btn.className = 'tab-btn';
-  btn.dataset.filter = b;
-  btn.textContent = `Bldg ${b}`;
-  tabBar.appendChild(btn);
-});
-tabBar.addEventListener('click', e => {
-  const btn = e.target.closest('.tab-btn');
-  if (!btn) return;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentFilter = btn.dataset.filter === 'all' ? 'all' : parseInt(btn.dataset.filter);
-  render();
-});
-
-document.getElementById('resCount').textContent = `${totalCount} residents`;
-
-// ── Search ─────────────────────────────────────────────────────────────────
-const searchInput = document.getElementById('searchInput');
-const clearBtn = document.getElementById('clearBtn');
-searchInput.addEventListener('input', () => {
-  query = searchInput.value.trim();
-  clearBtn.classList.toggle('visible', query.length > 0);
-  render();
-});
-clearBtn.addEventListener('click', () => {
-  searchInput.value = '';
-  query = '';
-  clearBtn.classList.remove('visible');
-  searchInput.focus();
-  render();
-});
-
-// ── View switching ─────────────────────────────────────────────────────────
-function setView(v) {
-  currentView = v;
-  document.getElementById('navSearch').classList.toggle('active', v === 'search');
-  document.getElementById('navAlpha').classList.toggle('active', v === 'alpha');
-  document.getElementById('navBuilding').classList.toggle('active', v === 'building');
-  tabBar.style.display = (v === 'building') ? 'flex' : 'none';
-  if (v !== 'building') { currentFilter = 'all'; document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===0)); }
-  render();
-}
-tabBar.style.display = 'none';
-
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────
 function initials(r) {
   if (!r.last) return '?';
   const f = r.first ? r.first[0] : '';
-  const l = r.last[0];
-  return (f + l).toUpperCase();
+  return (f + r.last[0]).toUpperCase();
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function highlight(text, q) {
@@ -483,26 +483,45 @@ function highlight(text, q) {
   return escHtml(text).replace(re, '<mark>$1</mark>');
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
 function matches(r, q) {
   if (!q) return true;
   const ql = q.toLowerCase();
   return r.full.toLowerCase().includes(ql)
       || String(r.unit).includes(ql)
       || r.phone.includes(ql)
-      || r.alt.includes(ql)
       || r.cell.includes(ql)
       || r.last.toLowerCase().includes(ql)
       || r.first.toLowerCase().includes(ql);
 }
 
-// ── Card builder ───────────────────────────────────────────────────────────
+// ── Phone row builder ──────────────────────────────────────────────
+function phoneRow(label, number, q) {
+  const row = document.createElement('div');
+  row.className = 'phone-row';
+  const left = document.createElement('div');
+  left.className = 'phone-row-left';
+  const lbl = document.createElement('div');
+  lbl.className = 'phone-label';
+  lbl.textContent = label;
+  const num = document.createElement('div');
+  num.className = 'phone-number';
+  num.innerHTML = highlight(number, q);
+  left.appendChild(lbl);
+  left.appendChild(num);
+  const btn = document.createElement('a');
+  btn.className = 'call-btn';
+  btn.href = `tel:${number.replace(/\D/g,'')}`;
+  btn.innerHTML = '📞';
+  btn.setAttribute('aria-label', `Call ${label}`);
+  row.appendChild(left);
+  row.appendChild(btn);
+  return row;
+}
+
+// ── Card builder ───────────────────────────────────────────────────
 function buildCard(r, q, showBldg) {
-  const hasPhone = r.phone || r.cell;
-  const multiPhone = [r.phone, r.alt, r.cell].filter(Boolean).length > 1;
+  const hasPhone  = r.phone || r.cell;
+  const multiPhone = [r.phone, r.cell].filter(Boolean).length > 1;
   const primaryPhone = r.phone || r.cell || '';
   const callHref = hasPhone ? `tel:${primaryPhone.replace(/\D/g,'')}` : '#';
 
@@ -510,7 +529,6 @@ function buildCard(r, q, showBldg) {
   card.className = 'resident-card' + (!hasPhone ? ' no-phone' : '');
   card.dataset.unit = r.unit;
 
-  // Main row
   const main = document.createElement('div');
   main.className = 'card-main';
 
@@ -547,16 +565,12 @@ function buildCard(r, q, showBldg) {
   card.appendChild(main);
 
   // Expanded phones panel
-  if (multiPhone || r.cell) {
+  if (multiPhone) {
     const phones = document.createElement('div');
     phones.className = 'card-phones';
-
     if (r.phone) phones.appendChild(phoneRow('Home', r.phone, q));
-    if (r.alt)   phones.appendChild(phoneRow('Alternate', r.alt, q));
-    if (r.cell)  phones.appendChild(phoneRow('Cell', r.cell, q, true));
-
+    if (r.cell)  phones.appendChild(phoneRow('Cell', r.cell,  q));
     card.appendChild(phones);
-
     main.addEventListener('click', () => {
       const isOpen = phones.classList.contains('open');
       if (openCard && openCard !== phones) openCard.classList.remove('open');
@@ -564,67 +578,30 @@ function buildCard(r, q, showBldg) {
       openCard = isOpen ? null : phones;
     });
   } else if (hasPhone) {
-    main.addEventListener('click', () => {
-      window.location.href = callHref;
-    });
+    main.addEventListener('click', () => { window.location.href = callHref; });
   }
 
   return card;
 }
 
-function phoneRow(label, number, q, isCell) {
-  const row = document.createElement('div');
-  row.className = 'phone-row';
-  const left = document.createElement('div');
-  left.className = 'phone-row-left';
-  const lbl = document.createElement('div');
-  lbl.className = 'phone-label';
-  lbl.innerHTML = label;
-  const num = document.createElement('div');
-  num.className = 'phone-number';
-  num.innerHTML = highlight(number, q);
-  left.appendChild(lbl);
-  left.appendChild(num);
-  const btn = document.createElement('a');
-  btn.className = 'call-btn';
-  btn.href = `tel:${number.replace(/\D/g,'')}`;
-  btn.innerHTML = '📞';
-  btn.setAttribute('aria-label', `Call ${label}`);
-  row.appendChild(left);
-  row.appendChild(btn);
-  return row;
-}
-
-// ── Render ─────────────────────────────────────────────────────────────────
+// ── Render ─────────────────────────────────────────────────────────
 function render() {
-  const content = document.getElementById('content');
+  const content    = document.getElementById('content');
   const emptyState = document.getElementById('emptyState');
   openCard = null;
   content.innerHTML = '';
   content.appendChild(emptyState);
 
   let list = RESIDENTS.filter(r => r.full);
+  if (currentFilter !== 'all') list = list.filter(r => r.building === currentFilter);
+  if (query) list = list.filter(r => matches(r, query));
 
-  // Filter by building if needed
-  if (currentFilter !== 'all') {
-    list = list.filter(r => r.building === currentFilter);
-  }
-
-  // Filter by search query
-  if (query) {
-    list = list.filter(r => matches(r, query));
-  }
-
-  if (list.length === 0) {
-    emptyState.classList.add('visible');
-    return;
-  }
+  if (list.length === 0) { emptyState.classList.add('visible'); return; }
   emptyState.classList.remove('visible');
 
   const showBldg = (currentView !== 'building' && currentFilter === 'all');
 
   if (currentView === 'alpha' && !query) {
-    // Group alphabetically by last name
     const sorted = [...list].sort((a,b) => a.last.localeCompare(b.last) || a.first.localeCompare(b.first));
     let lastLetter = '';
     sorted.forEach((r, i) => {
@@ -634,7 +611,6 @@ function render() {
         const label = document.createElement('div');
         label.className = 'section-label';
         label.textContent = letter;
-        label.style.animationDelay = (i * 0.01) + 's';
         content.appendChild(label);
       }
       const card = buildCard(r, query, showBldg);
@@ -643,16 +619,15 @@ function render() {
     });
 
   } else if (currentView === 'building' && !query) {
-    // Group by building
     const grouped = {};
     list.forEach(r => { (grouped[r.building] = grouped[r.building]||[]).push(r); });
     let idx = 0;
-    Object.keys(grouped).sort((a,b)=>a-b).forEach(b => {
+    Object.keys(grouped).sort((a,b) => a - b).forEach(b => {
       const label = document.createElement('div');
       label.className = 'section-label';
       label.textContent = `Building ${b}`;
       content.appendChild(label);
-      grouped[b].sort((a,c)=>a.unit-c.unit).forEach(r => {
+      grouped[b].sort((a,c) => a.unit - c.unit).forEach(r => {
         const card = buildCard(r, query, false);
         card.style.animationDelay = (idx++ * 0.012) + 's';
         content.appendChild(card);
@@ -660,7 +635,6 @@ function render() {
     });
 
   } else {
-    // Search results or default — sort by last name
     const sorted = [...list].sort((a,b) => a.last.localeCompare(b.last) || a.first.localeCompare(b.first));
     sorted.forEach((r, i) => {
       const card = buildCard(r, query, showBldg);
@@ -669,7 +643,6 @@ function render() {
     });
   }
 
-  // Result count when searching
   if (query) {
     const bar = document.createElement('div');
     bar.className = 'results-bar visible';
@@ -678,8 +651,84 @@ function render() {
   }
 }
 
-// ── Boot ───────────────────────────────────────────────────────────────────
-render();
+// ── View switching ─────────────────────────────────────────────────
+function setView(v) {
+  currentView = v;
+  document.getElementById('navSearch').classList.toggle('active', v === 'search');
+  document.getElementById('navAlpha').classList.toggle('active', v === 'alpha');
+  document.getElementById('navBuilding').classList.toggle('active', v === 'building');
+  tabBar.style.display = (v === 'building') ? 'flex' : 'none';
+  if (v !== 'building') {
+    currentFilter = 'all';
+    document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i === 0));
+  }
+  render();
+}
+
+// ── Search ─────────────────────────────────────────────────────────
+const searchInput = document.getElementById('searchInput');
+const clearBtn    = document.getElementById('clearBtn');
+searchInput.addEventListener('input', () => {
+  query = searchInput.value.trim();
+  clearBtn.classList.toggle('visible', query.length > 0);
+  render();
+});
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  query = '';
+  clearBtn.classList.remove('visible');
+  searchInput.focus();
+  render();
+});
+
+// ── Init tabs ──────────────────────────────────────────────────────
+const tabBar = document.getElementById('tabBar');
+tabBar.style.display = 'none';
+
+function initTabs() {
+  const buildings = [...new Set(RESIDENTS.map(r => r.building))].sort((a,b) => a - b);
+  // Remove old building buttons (keep the "All" button)
+  const existing = tabBar.querySelectorAll('[data-filter]:not([data-filter="all"])');
+  existing.forEach(b => b.remove());
+  buildings.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn';
+    btn.dataset.filter = b;
+    btn.textContent = `Bldg ${b}`;
+    tabBar.appendChild(btn);
+  });
+}
+
+tabBar.addEventListener('click', e => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter === 'all' ? 'all' : parseInt(btn.dataset.filter);
+  render();
+});
+
+// ── Load data from Google Sheet ────────────────────────────────────
+async function loadData() {
+  const statusMsg = document.getElementById('statusMsg');
+  try {
+    const res = await fetch(PROXY + encodeURIComponent(SHEET_URL));
+    if (!res.ok) throw new Error('Network error');
+    const text = await res.text();
+    RESIDENTS = parseCSV(text);
+    const totalCount = RESIDENTS.filter(r => r.full).length;
+    document.getElementById('resCount').textContent = `${totalCount} residents`;
+    statusMsg.style.display = 'none';
+    initTabs();
+    render();
+  } catch (err) {
+    statusMsg.className = 'status-msg error';
+    statusMsg.innerHTML = '<div class="icon">⚠️</div>Unable to load directory.<br>Please try again later.';
+    document.getElementById('resCount').textContent = 'Unavailable';
+  }
+}
+
+loadData();
 </script>
 </body>
 </html>
